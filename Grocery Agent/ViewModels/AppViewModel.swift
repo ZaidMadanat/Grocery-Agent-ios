@@ -66,6 +66,24 @@ final class AppViewModel: ObservableObject {
         }
     }
 
+    func updateGroceryItem(_ item: GroceryItem, quantity: String) {
+        groceryItems = groceryItems.map { current in
+            guard current.id == item.id else { return current }
+            var modified = current
+            modified.quantity = quantity
+            return modified
+        }
+    }
+
+    func updateInventoryItem(_ item: InventoryItem, amount: Int) {
+        inventoryItems = inventoryItems.map { current in
+            guard current.id == item.id else { return current }
+            var updated = current
+            updated.quantity = "\(amount)"
+            return updated
+        }
+    }
+
     func updateMealPlan(_ plan: [MealPlanDay]) {
         weeklyPlan = plan
     }

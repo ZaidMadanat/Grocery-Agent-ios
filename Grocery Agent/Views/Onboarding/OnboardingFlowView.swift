@@ -263,7 +263,6 @@ private extension OnboardingFlowView {
                         Text("Protein \(Int(normalized.protein * 100))%")
                         Text("Carbs \(Int(normalized.carbs * 100))%")
                         Text("Fats \(Int(normalized.fats * 100))%")
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -281,7 +280,11 @@ private extension OnboardingFlowView {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(Color.agentSecondaryBackground.opacity(0.65), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(Color.white.opacity(0.15))
+        )
     }
 
     @ViewBuilder

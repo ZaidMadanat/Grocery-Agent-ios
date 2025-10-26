@@ -15,23 +15,27 @@ struct SelectableChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 if let systemImage {
                     Image(systemName: systemImage)
                         .symbolRenderingMode(.palette)
-                        .foregroundStyle(isSelected ? .white : .accentColor)
+                        .foregroundStyle(isSelected ? Color.white : Color.accentColor)
+                        .frame(width: 18, height: 18)
                 }
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.callout.weight(.semibold))
+                    .lineLimit(1)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .padding(.vertical, 4)
             .background(background)
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .strokeBorder(borderColor, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .strokeBorder(borderColor, lineWidth: isSelected ? 1.5 : 0)
             )
-            .foregroundStyle(isSelected ? Color.white : .primary)
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .foregroundStyle(isSelected ? Color.white : Color.accentColor)
         }
         .buttonStyle(.plain)
         .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isSelected)
@@ -41,12 +45,12 @@ struct SelectableChip: View {
         if isSelected {
             AnyShapeStyle(LinearGradient(colors: [.blue, .green], startPoint: .leading, endPoint: .trailing))
         } else {
-            AnyShapeStyle(Color.agentSurfaceBackground)
+            AnyShapeStyle(Color.clear)
         }
     }
 
     private var borderColor: Color {
-        isSelected ? .clear : .accentColor.opacity(0.25)
+        isSelected ? Color.white.opacity(0.45) : Color.clear
     }
 }
 

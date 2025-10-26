@@ -69,30 +69,16 @@ struct MacroSlidersView: View {
         let normalizedCarbs = carbs / total
         let normalizedFats = fats / total
 
-        return VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 16) {
             Text("Macro Balance")
                 .font(.title3.bold())
-            ProgressView(value: normalizedProtein)
-                .tint(.orange)
-                .overlay(alignment: .leading) {
-                    Text("Protein \(Int(normalizedProtein * 100))%")
-                        .font(.caption.bold())
-                        .offset(y: -18)
-                }
-            ProgressView(value: normalizedCarbs)
-                .tint(.mint)
-                .overlay(alignment: .leading) {
-                    Text("Carbs \(Int(normalizedCarbs * 100))%")
-                        .font(.caption.bold())
-                        .offset(y: -18)
-                }
-            ProgressView(value: normalizedFats)
-                .tint(.pink)
-                .overlay(alignment: .leading) {
-                    Text("Fats \(Int(normalizedFats * 100))%")
-                        .font(.caption.bold())
-                        .offset(y: -18)
-                }
+
+            VStack(spacing: 12) {
+                macroSummaryRow(title: "Protein", symbol: "bolt.fill", value: normalizedProtein, color: .orange)
+                macroSummaryRow(title: "Carbs", symbol: "leaf.fill", value: normalizedCarbs, color: .mint)
+                macroSummaryRow(title: "Fats", symbol: "drop.fill", value: normalizedFats, color: .pink)
+            }
+
             Text("Total weight \(Int(total * 100))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -118,6 +104,36 @@ struct MacroSlidersView: View {
             ), in: 0...1, step: 0.05)
             .tint(color)
         }
+    }
+
+    private func macroSummaryRow(title: String, symbol: String, value: Double, color: Color) -> some View {
+        HStack(spacing: 16) {
+            Circle()
+                .fill(color.opacity(0.2))
+                .frame(width: 34, height: 34)
+                .overlay {
+                    Image(systemName: symbol)
+                        .font(.footnote)
+                        .foregroundStyle(color)
+                }
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text("\(Int(value * 100))%")
+                        .font(.subheadline.weight(.semibold))
+                }
+
+                ProgressView(value: value)
+                    .tint(color)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.agentSecondaryBackground.opacity(0.4), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func propagate() {

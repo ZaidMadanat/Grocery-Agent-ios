@@ -29,16 +29,17 @@ final class InventoryViewModel: ObservableObject {
         switch status {
         case .fresh: return ColorDescriptor(color: .green, label: "Fresh")
         case .warning: return ColorDescriptor(color: .yellow, label: "3-5 days")
-        case .urgent: return ColorDescriptor(color: .orange, label: "Expiring soon")
-        case .expired: return ColorDescriptor(color: .red, label: "Expired")
+        case .urgent: return ColorDescriptor(color: .red, label: "Expiring soon")
+        case .expired: return ColorDescriptor(color: .gray, label: "Expired")
         }
     }
 
-    func updateQuantity(for item: InventoryItem, quantity: String) {
+    func updateQuantity(for item: InventoryItem, amount: Int) {
         guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
         var updated = items[index]
-        updated.quantity = quantity
+        updated.quantity = "\(amount)"
         items[index] = updated
+        appModel.updateInventoryItem(updated, amount: amount)
     }
 
     func remove(_ item: InventoryItem) {

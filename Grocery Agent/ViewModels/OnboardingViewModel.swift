@@ -74,7 +74,7 @@ final class OnboardingViewModel: ObservableObject {
             if selectedRestrictions.contains(.other) {
                 return !parsedCustomRestrictions.isEmpty
             }
-            return !selectedRestrictions.isEmpty
+            return true
         case .caloriesAndMeals:
             return dailyCalorieGoal >= 1000 && !mealTypes.isEmpty
         case .macros:

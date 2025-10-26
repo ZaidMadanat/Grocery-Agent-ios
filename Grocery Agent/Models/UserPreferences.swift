@@ -46,7 +46,7 @@ enum DietaryRestriction: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .vegetarian: return "leaf"
         case .vegan: return "sparkle"
-        case .glutenFree: return "wheat.slash"
+        case .glutenFree: return "allergens"
         case .other: return "square.and.pencil"
         }
     }

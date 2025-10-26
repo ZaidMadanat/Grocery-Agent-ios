@@ -10,7 +10,6 @@ import SwiftUI
 struct InventoryView: View {
     @ObservedObject var appModel: AppViewModel
     @StateObject private var viewModel: InventoryViewModel
-    @State private var editedQuantity: String = ""
 
     init(appModel: AppViewModel) {
         self.appModel = appModel
@@ -23,8 +22,8 @@ struct InventoryView: View {
                 ForEach(viewModel.groupedByCategory, id: \.key) { category, items in
                     Section(category) {
                         ForEach(items) { item in
-                            InventoryRow(item: item, descriptor: viewModel.color(for: item.statusColor)) { newQuantity in
-                                viewModel.updateQuantity(for: item, quantity: newQuantity)
+                            InventoryRow(item: item, descriptor: viewModel.color(for: item.statusColor)) { newAmount in
+                                viewModel.updateQuantity(for: item, amount: newAmount)
                             } onRemove: {
                                 viewModel.remove(item)
                             }
@@ -40,21 +39,22 @@ struct InventoryView: View {
 private struct InventoryRow: View {
     let item: InventoryItem
     let descriptor: InventoryViewModel.ColorDescriptor
-    var onUpdate: (String) -> Void
+    var onUpdate: (Int) -> Void
     var onRemove: () -> Void
-    @State private var quantity: String
+    @State private var amount: Int
 
     init(
         item: InventoryItem,
         descriptor: InventoryViewModel.ColorDescriptor,
-        onUpdate: @escaping (String) -> Void,
+        onUpdate: @escaping (Int) -> Void,
         onRemove: @escaping () -> Void
     ) {
         self.item = item
         self.descriptor = descriptor
         self.onUpdate = onUpdate
         self.onRemove = onRemove
-        _quantity = State(initialValue: item.quantity)
+        let numeric = Int(item.quantity.filter { $0.isNumber }) ?? 1
+        _amount = State(initialValue: max(numeric, 0))
     }
 
     var body: some View {
@@ -70,15 +70,13 @@ private struct InventoryRow: View {
                     .background(descriptor.color.opacity(0.15), in: Capsule())
             }
 
-            HStack {
+            HStack(alignment: .center, spacing: 16) {
                 Label("\(item.daysUntilExpiry) days left", systemImage: "clock")
                     .foregroundStyle(descriptor.color)
                 Spacer()
-                TextField("Qty", text: $quantity, onCommit: {
-                    onUpdate(quantity)
-                })
-                .textFieldStyle(.roundedBorder)
-                .frame(width: 80)
+                QuantityStepper(amount: $amount, color: descriptor.color) {
+                    onUpdate(amount)
+                }
                 Button(role: .destructive, action: onRemove) {
                     Image(systemName: "trash")
                 }
@@ -91,9 +89,43 @@ private struct InventoryRow: View {
             }
         }
         .padding(.vertical, 4)
-        .onChange(of: quantity) { newValue in
-            onUpdate(newValue)
+    }
+}
+
+private struct QuantityStepper: View {
+    @Binding var amount: Int
+    var color: Color
+    var onUpdate: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Button {
+                amount = max(amount - 1, 0)
+                onUpdate()
+            } label: {
+                Image(systemName: "minus")
+                    .font(.subheadline.weight(.bold))
+                    .frame(width: 30, height: 30)
+                    .background(color.opacity(0.15), in: Circle())
+            }
+            .buttonStyle(.plain)
+
+            Text("\(amount)")
+                .font(.headline)
+                .frame(minWidth: 32)
+
+            Button {
+                amount += 1
+                onUpdate()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.subheadline.weight(.bold))
+                    .frame(width: 30, height: 30)
+                    .background(color.opacity(0.15), in: Circle())
+            }
+            .buttonStyle(.plain)
         }
+        .padding(.horizontal, 6)
     }
 }
 

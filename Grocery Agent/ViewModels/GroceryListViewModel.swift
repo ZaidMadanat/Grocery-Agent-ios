@@ -42,4 +42,9 @@ final class GroceryListViewModel: ObservableObject {
         appModel.removeGroceryItem(item)
         items = appModel.groceryItems
     }
+
+    func updateQuantity(_ quantity: String, for item: GroceryItem) {
+        appModel.updateGroceryItem(item, quantity: quantity)
+        items = appModel.groceryItems
+    }
 }

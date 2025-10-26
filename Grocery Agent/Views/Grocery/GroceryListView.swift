@@ -25,7 +25,7 @@ struct GroceryListView: View {
                 ForEach(viewModel.groupedByDay, id: \.key) { day, items in
                     Section(day) {
                         ForEach(items) { item in
-                            HStack {
+                            HStack(spacing: 12) {
                                 Button {
                                     viewModel.toggleCompletion(for: item)
                                 } label: {
@@ -43,6 +43,13 @@ struct GroceryListView: View {
                                 }
 
                                 Spacer()
+
+                                QuantityEditor(
+                                    quantity: item.quantity,
+                                    onCommit: { newValue in
+                                        viewModel.updateQuantity(newValue, for: item)
+                                    }
+                                )
 
                                 Button(role: .destructive) {
                                     presentRemoval = item
@@ -105,4 +112,31 @@ struct GroceryListView: View {
 
 #Preview {
     GroceryListView(appModel: AppViewModel())
+}
+
+private struct QuantityEditor: View {
+    @State private var text: String
+    var onCommit: (String) -> Void
+
+    init(quantity: String, onCommit: @escaping (String) -> Void) {
+        _text = State(initialValue: quantity)
+        self.onCommit = onCommit
+    }
+
+    var body: some View {
+        TextField("Qty", text: $text)
+            .textFieldStyle(.roundedBorder)
+            .frame(width: 90)
+            .multilineTextAlignment(.center)
+            .onSubmit { commit() }
+            .onChange(of: text) { newValue in
+                commit()
+            }
+    }
+
+    private func commit() {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        onCommit(trimmed)
+    }
 }

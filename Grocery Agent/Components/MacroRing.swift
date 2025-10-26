@@ -13,6 +13,7 @@ struct MacroRing: View {
     let goal: Double
     let gradient: Gradient
     let unit: String
+    var size: CGFloat = 96
 
     private var progress: Double {
         guard goal > 0 else { return 0 }
@@ -41,10 +42,11 @@ struct MacroRing: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .frame(width: 110, height: 110)
+            .frame(width: size, height: size)
 
             Text(title)
                 .font(.subheadline.bold())
+                .frame(width: size)
         }
     }
 }

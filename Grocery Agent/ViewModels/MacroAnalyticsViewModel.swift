@@ -13,14 +13,22 @@ final class MacroAnalyticsViewModel: ObservableObject {
     @Published private(set) var weeklyPlan: [MealPlanDay]
 
     private let appModel: AppViewModel
+    private var cancellables = Set<AnyCancellable>()
 
     init(appModel: AppViewModel) {
         self.appModel = appModel
         self.weeklyPlan = appModel.weeklyPlan
+
+        appModel.$weeklyPlan
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] plan in
+                self?.weeklyPlan = plan
+            }
+            .store(in: &cancellables)
     }
 
     struct MacroDataPoint: Identifiable {
-        let id = UUID()
+        let id: String
         let day: String
         let macro: MacroType
         let value: Double
@@ -41,19 +49,39 @@ final class MacroAnalyticsViewModel: ObservableObject {
     }
 
     func data(for macro: MacroType) -> [MacroDataPoint] {
-        weeklyPlan.enumerated().map { index, day in
-            let label = DateFormatter.weekdayFormatter.string(from: day.date)
-            let value: Double = {
-                switch macro {
-                case .calories: return Double(day.macros.calories)
-                case .protein: return day.macros.protein
-                case .carbs: return day.macros.carbs
-                case .fats: return day.macros.fats
-                }
-            }()
+        let calendar = Calendar.current
 
-            return MacroDataPoint(day: label, macro: macro, value: value)
+        let grouped = Dictionary(grouping: weeklyPlan) { plan in
+            calendar.startOfDay(for: plan.date)
         }
+
+        return grouped
+            .keys
+            .sorted()
+            .compactMap { day -> MacroDataPoint? in
+                guard let entries = grouped[day] else { return nil }
+
+                let totals = entries.reduce((calories: 0.0, protein: 0.0, carbs: 0.0, fats: 0.0)) { partial, plan in
+                    (
+                        calories: partial.calories + Double(plan.macros.calories),
+                        protein: partial.protein + plan.macros.protein,
+                        carbs: partial.carbs + plan.macros.carbs,
+                        fats: partial.fats + plan.macros.fats
+                    )
+                }
+
+                let label = DateFormatter.weekdayFormatter.string(from: day)
+                let value: Double = {
+                    switch macro {
+                    case .calories: return totals.calories
+                    case .protein: return totals.protein
+                    case .carbs: return totals.carbs
+                    case .fats: return totals.fats
+                    }
+                }()
+
+                return MacroDataPoint(id: "\(macro.rawValue)-\(label)", day: label, macro: macro, value: value)
+            }
     }
 
     func trend(for macro: MacroType) -> Double {
