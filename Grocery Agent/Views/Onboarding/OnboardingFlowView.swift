@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OnboardingFlowView: View {
     @ObservedObject var appModel: AppViewModel
+    @ObservedObject var authViewModel: AuthViewModel
     @StateObject private var viewModel = OnboardingViewModel()
     @FocusState private var customRestrictionFocused: Bool
 
@@ -110,8 +111,20 @@ private extension OnboardingFlowView {
 
     func continueAction() {
         if viewModel.step == .review {
-            let preferences = viewModel.finalizePreferences()
-            appModel.setPreferences(preferences)
+            Task { @MainActor in
+                do {
+                    let preferences = try await viewModel.finalizePreferences()
+                    appModel.setPreferences(preferences)
+                    // Mark onboarding as complete
+                    authViewModel.needsOnboarding = false
+                    // ContentView will automatically navigate to Dashboard
+                } catch {
+                    // Handle error - logout user and return to landing
+                    print("Failed to save preferences: \(error)")
+                    APIClient.shared.logout()
+                    authViewModel.needsOnboarding = false
+                }
+            }
         } else {
             viewModel.advance()
         }
@@ -317,5 +330,5 @@ private struct OnboardingLabelStyle: LabelStyle {
 }
 
 #Preview {
-    OnboardingFlowView(appModel: AppViewModel())
+    OnboardingFlowView(appModel: AppViewModel(), authViewModel: AuthViewModel())
 }

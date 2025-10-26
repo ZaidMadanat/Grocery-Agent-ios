@@ -91,9 +91,27 @@ final class OnboardingViewModel: ObservableObject {
             .filter { !$0.isEmpty }
     }
 
-    func finalizePreferences() -> UserPreferences {
+    func finalizePreferences() async throws -> UserPreferences {
         let normalizedMacro = macroFocus.normalized
         let dietarySelections = selectedRestrictions.filter { $0 != .other }
+        
+        // Send preferences to backend API
+        let allRestrictions = Array(dietarySelections).map { $0.rawValue.lowercased() } + parsedCustomRestrictions
+        let allLikes: [String] = [] // Can be populated from additional preferences in future
+        
+        let updateRequest = UpdateProfileRequest(
+            daily_calories: Int(dailyCalorieGoal),
+            dietary_restrictions: allRestrictions,
+            likes: allLikes,
+            additional_information: otherRestrictionInput.isEmpty ? nil : otherRestrictionInput,
+            target_protein_g: normalizedMacro.protein,
+            target_carbs_g: normalizedMacro.carbs,
+            target_fat_g: normalizedMacro.fats
+        )
+        
+        try await APIClient.shared.updateProfile(request: updateRequest)
+        
+        // Return local preferences after successful API update
         return UserPreferences(
             dietaryRestrictions: Array(dietarySelections),
             customRestrictions: parsedCustomRestrictions,

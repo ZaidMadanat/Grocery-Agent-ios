@@ -62,7 +62,7 @@ struct SettingsView: View {
             }
             .alert("Log Out?", isPresented: $viewModel.showLogoutConfirmation) {
                 Button("Log Out", role: .destructive) {
-                    // Placeholder for logout flow.
+                    viewModel.logout()
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {

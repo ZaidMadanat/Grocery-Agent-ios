@@ -24,4 +24,13 @@ final class SettingsViewModel: ObservableObject {
     func resetPreferences() {
         appModel.resetOnboarding()
     }
+    
+    func logout() {
+        // Call APIClient logout to clear token
+        APIClient.shared.logout()
+        
+        // Reset onboarding state in AuthViewModel
+        // Note: This will need to be passed in or accessed differently
+        // For now, we'll just rely on APIClient.shared.isAuthenticated being false
+    }
 }

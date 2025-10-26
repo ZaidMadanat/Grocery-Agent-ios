@@ -81,8 +81,13 @@ struct DashboardView: View {
 private extension DashboardView {
     var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("This week")
-                .font(.largeTitle.bold())
+            if let userName = APIClient.shared.currentUser?.name {
+                Text("Welcome \(userName)")
+                    .font(.largeTitle.bold())
+            } else {
+                Text("Welcome")
+                    .font(.largeTitle.bold())
+            }
             if let preferences = appModel.preferences {
                 Text("Tracking \(Int(preferences.dailyCalorieGoal)) kcals · \(preferences.mealTypes.count) meals per day")
                     .font(.subheadline)
@@ -138,8 +143,8 @@ private extension DashboardView {
                 Text("Daily macros")
                     .font(.title2.bold())
                 Spacer()
-                if let macros = viewModel.selectedDay?.macros {
-                    Text("\(macros.calories) kcals logged")
+                if let dailyCal = appModel.preferences?.dailyCalorieGoal {
+                    Text("\(dailyCal) kcals target")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -148,30 +153,32 @@ private extension DashboardView {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 24) {
                     if let day = viewModel.selectedDay {
+                        // Show goals (targets) based on daily calories and macro percentages
+                        let calorieGoal = Double(appModel.preferences?.dailyCalorieGoal ?? 2000)
                         MacroRing(
                             title: "Calories",
-                            value: Double(day.macros.calories),
-                            goal: Double(appModel.preferences?.dailyCalorieGoal ?? 2000),
+                            value: calorieGoal,
+                            goal: calorieGoal,
                             gradient: Gradient(colors: [.purple, .blue]),
                             unit: "kcals"
                         )
                         MacroRing(
                             title: "Protein",
-                            value: day.macros.protein,
+                            value: viewModel.macroGoal(for: "protein"),
                             goal: viewModel.macroGoal(for: "protein"),
                             gradient: Gradient(colors: [.orange, .pink]),
                             unit: "g"
                         )
                         MacroRing(
                             title: "Carbs",
-                            value: day.macros.carbs,
+                            value: viewModel.macroGoal(for: "carbs"),
                             goal: viewModel.macroGoal(for: "carbs"),
                             gradient: Gradient(colors: [.mint, .green]),
                             unit: "g"
                         )
                         MacroRing(
                             title: "Fats",
-                            value: day.macros.fats,
+                            value: viewModel.macroGoal(for: "fats"),
                             goal: viewModel.macroGoal(for: "fats"),
                             gradient: Gradient(colors: [.yellow, .orange]),
                             unit: "g"

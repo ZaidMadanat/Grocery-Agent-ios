@@ -29,7 +29,9 @@ final class AppViewModel: ObservableObject {
     }
 
     var isOnboarded: Bool {
-        preferences != nil
+        // User is onboarded if they have preferences AND have completed onboarding
+        // We also check if they're authenticated to ensure proper flow
+        preferences != nil && APIClient.shared.isAuthenticated
     }
 
     func bootstrap() {
@@ -40,12 +42,92 @@ final class AppViewModel: ObservableObject {
             preferences = nil
         }
 
+        // Load initial data
         weeklyPlan = MockDataService.weeklyPlan()
         groceryItems = MockDataService.groceryItems()
         inventoryItems = MockDataService.inventoryItems()
         notifications = MockDataService.notifications()
+        
+        // Fetch user profile from API if authenticated
+        if APIClient.shared.isAuthenticated {
+            Task {
+                await fetchUserProfile()
+            }
+        }
+    }
+    
+    @MainActor
+    func fetchUserProfileIfNeeded() async {
+        // Only fetch if we're authenticated and haven't fetched yet
+        guard APIClient.shared.isAuthenticated else {
+            print("ℹ️ Not authenticated, skipping profile fetch")
+            return
+        }
+        await fetchUserProfile()
+    }
+    
+    private func fetchUserProfile() async {
+        print("📡 Attempting to fetch user profile...")
+        print("   isAuthenticated: \(APIClient.shared.isAuthenticated)")
+        do {
+            let profile = try await APIClient.shared.getUserProfile()
+            print("✅ Successfully fetched user profile")
+            
+            // Update or create preferences from API response
+            var prefs = preferences ?? UserPreferences(
+                dietaryRestrictions: [],
+                customRestrictions: [],
+                dailyCalorieGoal: 2000,
+                mealTypes: [.breakfast, .lunch, .dinner],
+                macroPriorities: .balanced
+            )
+            
+            // Update from API response
+            if let dailyCalories = profile.profile.daily_calories {
+                prefs.dailyCalorieGoal = dailyCalories
+            }
+            
+            // Update macros if available
+            // The API returns percentages (sum to ~1.0), which MacroPriorities expects
+            if let macros = profile.profile.macros {
+                prefs.macroPriorities = MacroPriorities(
+                    protein: macros.protein,
+                    carbs: macros.carbs,
+                    fats: macros.fats
+                )
+                print("📊 Updated macro priorities from API:")
+                print("   Protein: \(macros.protein * 100)%")
+                print("   Carbs: \(macros.carbs * 100)%")
+                print("   Fats: \(macros.fats * 100)%")
+            }
+            
+            // Update dietary restrictions
+            if let restrictions = profile.profile.dietary_restrictions {
+                // Convert string restrictions to enum types (simplified)
+                prefs.dietaryRestrictions = []
+                prefs.customRestrictions = restrictions
+            }
+            
+            // Save updated preferences
+            preferences = prefs
+            preferenceStore.save(prefs)
+            
+            // Update current user info
+            APIClient.shared.currentUser = profile.user
+            
+        } catch {
+            print("❌ Failed to fetch user profile: \(error)")
+            if let apiError = error as? APIError {
+                print("   Error type: \(apiError)")
+                if case .serverError(let message) = apiError {
+                    print("   Server message: \(message)")
+                }
+            }
+            // Handle error gracefully - user can still use the app
+        }
     }
 
+    @MainActor
     func setPreferences(_ newPreferences: UserPreferences) {
         preferences = newPreferences
         preferenceStore.save(newPreferences)
