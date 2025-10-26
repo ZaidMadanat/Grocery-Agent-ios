@@ -1,0 +1,111 @@
+frontend_tasks:
+  - id: "signup_001"
+    title: "Sign-Up / Registration Flow"
+    description: >
+      Implement a multi-step onboarding experience that collects user dietary
+      and nutritional preferences before generating their grocery plan.
+    subtasks:
+      - Create a welcome screen introducing the GroceryAgent app and asking to begin setup.
+      - Add dietary restriction selection:
+          - Predefined buttons: Vegetarian (V), Vegan (VE), Gluten-Free (GF), Other.
+          - 'Other' opens a text field where users can enter custom restrictions.
+          - On submit, these custom strings are decomposed into an array for backend upload.
+      - Add required input for daily calorie goal (numeric entry).
+      - Allow selection of meal types to include (Breakfast, Lunch, Dinner, Snacks).
+      - Provide optional sliders or toggles for macro priorities (Protein, Carbs, Fats).
+      - Validate required fields before allowing user to continue.
+      - Save all selections locally, then POST to backend once user confirms.
+
+  - id: "preferences_002"
+    title: "User Preferences Page"
+    description: >
+      A screen for users to edit their existing preferences after registration, will be a button on the top bar.
+    subtasks:
+      - Display existing user data from API or local cache.
+      - Enable updating dietary restrictions and macros.
+      - Allow user to reselect meal types or calorie goals.
+      - Persist updates via PATCH/PUT to backend.
+
+  - id: "dashboard_003"
+    title: "Main Dashboard / Meal Plan Overview"
+    description: >
+      Display generated weekly meal plans, with the ability to view each day's meals,
+      macros, and detailed recipes.
+    subtasks:
+      - Show tabs or segmented controls for each day of the week.
+      - Display meal sections: Breakfast, Lunch, Dinner, Snacks.
+      - Each meal card shows name, calories, and image thumbnail.
+      - Add “View Details” button per meal leading to recipe screen.
+      - After each meal, update daily macros progress ring dynamically.
+      - Include a floating “regenerate” button to regenarate the recipes 
+        for the day 
+
+  - id: "macros_004"
+    title: "Macro Visualization"
+    description: >
+      Provide a visual breakdown of calories, protein, carbs, and fats for each day.
+    subtasks:
+      - Implement circular charts or progress rings for each macro type.
+      - Tap or pressable macro rings reveal percentage breakdown and numeric values.
+      - Animate transitions when meals are logged as eaten. (dynamic)
+      - Fetch or recompute macro totals when meals update.
+
+  - id: "grocerylist_005"
+    title: "Grocery List Screen"
+    description: >
+      Display consolidated grocery items grouped by meal type or day.
+    subtasks:
+      - Display items list with tags for day and meal type.
+	  - Include a trash/removal button in case user does not want the item
+      - Show total items
+      - Provide button to open Kroger/Instacart checkout (link provided by backend).
+
+  - id: "recipe_006"
+    title: "Recipe Detail View"
+    description: >
+      Provide detailed cooking instructions for each meal with optional voice help.
+    subtasks:
+      - Show recipe name, image, calories, macros, and ingredient list.
+      - Include “Start Cooking” mode that shows one step at a time.
+      - Integrate “Live Voice Help” (LiveKit) for step-by-step guidance when the start button is pressed (optional from the user). 
+      - Add a “Mark as Cooked” button to decrement ingredient inventory.
+
+  - id: "inventory_007"
+    title: "Inventory and Expiry Tracker"
+    description: >
+      Allow users to view and manage perishables, showing which items are nearing expiry.
+    subtasks:
+      - Show categorized items with days remaining before expiry.
+      - Add visual indicator (color-coded: green/yellow/red) based on time left.
+      - Include option to remove or update item quantities manually.
+      - Trigger local notification if item expires within 2 days.
+
+  - id: "notifications_008"
+    title: "User Alerts and Notifications"
+    description: >
+      Handle all in-app and local notifications related to expiring items, grocery restock,
+      or new recipe recommendations.
+    subtasks:
+      - Schedule local notifications for expiring ingredients.
+      - Show banner alerts in app for completed or failed orders.
+      - Add in-app notification center for viewing past alerts.
+
+  - id: "settings_009"
+    title: "Profile & Settings Screen"
+    description: >
+      A lightweight settings view for managing app preferences and viewing connected services.
+    subtasks:
+      - Show account details and linked email.
+      - Allow log out or reset preferences.
+      - Display API sync status with backend.
+      - Optional: toggle to enable/disable voice mode (LiveKit).
+
+metadata:
+  frontend_owner: "You"
+  role: "Frontend SwiftUI Engineer"
+  dependencies: ["Backend API endpoints", "User profile and recipe generation services"]
+  notes: >
+    This section defines your frontend deliverables for AI guidance system.
+    The backend team handles all API endpoints; your focus is on UI, UX, and
+    API integration. Each task should have mock fallback data for offline testing.
+    Try to integrate SF symbols and make it the most "apple" looking app possible.

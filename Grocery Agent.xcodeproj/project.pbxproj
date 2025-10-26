@@ -10,22 +10,9 @@
 		14751BF52EACD7E800220862 /* Grocery Agent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Grocery Agent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		14751C042EACD8E200220862 /* Exceptions for "Grocery Agent" folder in "Grocery Agent" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Grocery-Agent-Info.plist",
-			);
-			target = 14751BF42EACD7E800220862 /* Grocery Agent */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		14751BF72EACD7E800220862 /* Grocery Agent */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				14751C042EACD8E200220862 /* Exceptions for "Grocery Agent" folder in "Grocery Agent" target */,
-			);
 			path = "Grocery Agent";
 			sourceTree = "<group>";
 		};
