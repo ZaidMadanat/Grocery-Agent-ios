@@ -23,8 +23,43 @@ final class PreferencesViewModel: ObservableObject {
     func saveUpdates() {
         isSaving = true
         Task {
-            try await Task.sleep(for: .milliseconds(450))
-            appModel.setPreferences(draft)
+            do {
+                // Convert dietary restrictions to strings
+                let dietaryRestrictionsStrings = draft.dietaryRestrictions.map { $0.rawValue.lowercased() }
+                let allRestrictions = dietaryRestrictionsStrings + draft.customRestrictions
+                
+                // Convert macro priorities to grams
+                // API expects grams, not percentages
+                let calories = Double(draft.dailyCalorieGoal)
+                let normalized = draft.macroPriorities.normalized
+                
+                let proteinGrams = (calories * normalized.protein) / 4.0  // 4 cal/g protein
+                let carbsGrams = (calories * normalized.carbs) / 4.0      // 4 cal/g carbs
+                let fatsGrams = (calories * normalized.fats) / 9.0        // 9 cal/g fats
+                
+                // Create API request
+                let updateRequest = UpdateProfileRequest(
+                    daily_calories: draft.dailyCalorieGoal,
+                    dietary_restrictions: allRestrictions.isEmpty ? nil : allRestrictions,
+                    likes: [], // Can be populated if we add likes to UserPreferences
+                    additional_information: draft.customRestrictions.isEmpty ? nil : draft.customRestrictions.joined(separator: ", "),
+                    target_protein_g: proteinGrams,
+                    target_carbs_g: carbsGrams,
+                    target_fat_g: fatsGrams
+                )
+                
+                // Call API to update profile
+                try await APIClient.shared.updateProfile(request: updateRequest)
+                
+                // Update local preferences after successful API call
+                appModel.setPreferences(draft)
+                
+            } catch {
+                print("Failed to update profile: \(error)")
+                // Still update local preferences even if API fails
+                appModel.setPreferences(draft)
+            }
+            
             isSaving = false
         }
     }
